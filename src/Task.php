@@ -13,7 +13,7 @@ class Task implements TaskInterface
     private $status;
     private $error;
     private $expression;
-    private $arguments;
+    private $arguments = [];
     private $estimate;
     private $progress;
     private $scheduledAt;

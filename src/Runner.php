@@ -17,13 +17,40 @@ final class Runner implements RunnerInterface
     private $handler;
 
     /**
+     * @var int
+     */
+    private $maxLifeTime;
+
+    /**
+     * @var callable
+     */
+    private $enqueueInterval;
+
+    /**
+     * @var callable
+     */
+    private $waitingInterval;
+
+    /**
      * @param ExecutorInterface $executor
      * @param HandlerInterface  $handler
+     * @param int               $maxLifeTime
+     * @param callable          $enqueueInterval
+     * @param callable          $waitingInterval
      */
-    public function __construct(ExecutorInterface $executor, HandlerInterface $handler)
-    {
-        $this->executor = $executor;
-        $this->handler  = $handler;
+    public function __construct(
+        ExecutorInterface $executor,
+        HandlerInterface $handler,
+        int $maxLifeTime = 3600,
+        callable $enqueueInterval = null,
+        callable $waitingInterval = null
+    ) {
+        $this->executor    = $executor;
+        $this->handler     = $handler;
+        $this->maxLifeTime = $maxLifeTime;
+
+        $this->enqueueInterval = $enqueueInterval ?: function (): int { return 60; };
+        $this->waitingInterval = $waitingInterval ?: function (): int { return 100000; };
     }
 
     /**
@@ -35,11 +62,13 @@ final class Runner implements RunnerInterface
         $this->executor->start();
         $server->trigger(ServerInterface::EVENT_STARTED);
 
-        while (!$this->executor->isShouldStop()) {
+        $startedAt = $enqueueAt = microtime(true);
+
+        while (!($this->executor->isShouldStop() || microtime(true) - $startedAt > $this->maxLifeTime)) {
             $this->executor->dispatch();
 
-            if (empty($startedAt) || microtime(true) - $startedAt > 1) {
-                $startedAt = microtime(true);
+            if (empty($enqueueAt) || microtime(true) - $enqueueAt > call_user_func($this->enqueueInterval)) {
+                $enqueueAt = microtime(true);
                 $server->trigger(ServerInterface::EVENT_ENQUEUE_TASKS, $queue);
             }
 
@@ -67,7 +96,7 @@ final class Runner implements RunnerInterface
                 $server->trigger(ServerInterface::EVENT_WAITING_TASKS);
             }
 
-            usleep(100000);
+            usleep(call_user_func($this->waitingInterval));
         }
 
         $server->trigger(ServerInterface::EVENT_STOPPING);
