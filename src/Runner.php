@@ -62,7 +62,8 @@ final class Runner implements RunnerInterface
         $this->executor->start();
         $server->trigger(ServerInterface::EVENT_STARTED);
 
-        $startedAt = $enqueueAt = microtime(true);
+        $startedAt = microtime(true);
+        $enqueueAt = null;
 
         while (!($this->executor->isShouldStop() || microtime(true) - $startedAt > $this->maxLifeTime)) {
             $this->executor->dispatch();
