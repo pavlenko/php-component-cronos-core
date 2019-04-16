@@ -49,8 +49,8 @@ final class Runner implements RunnerInterface
         $this->handler     = $handler;
         $this->maxLifeTime = $maxLifeTime;
 
-        $this->enqueueInterval = $enqueueInterval ?: function (): int { return 60; };
-        $this->waitingInterval = $waitingInterval ?: function (): int { return 100000; };
+        $this->enqueueInterval = $enqueueInterval ?: function (): float { return 60.0; };
+        $this->waitingInterval = $waitingInterval ?: function (): float { return 0.1; };
     }
 
     /**
@@ -63,15 +63,32 @@ final class Runner implements RunnerInterface
         $server->trigger(ServerInterface::EVENT_STARTED);
 
         $startedAt = microtime(true);
-        $enqueueAt = null;
+
+        $enqueueAt = 0;
+        $enqueueTo = 0;
+
+        $waitingAt = 0;
+        $waitingTo = 0;
 
         while (!($this->executor->isShouldStop() || microtime(true) - $startedAt > $this->maxLifeTime)) {
             $this->executor->dispatch();
 
-            if (empty($enqueueAt) || microtime(true) - $enqueueAt > call_user_func($this->enqueueInterval)) {
+            // Enqueue tasks at each minute
+            if (microtime(true) - $enqueueAt > $enqueueTo) {
                 $enqueueAt = microtime(true);
+                $enqueueTo = max(call_user_func($this->enqueueInterval), 60);
+
                 $server->trigger(ServerInterface::EVENT_ENQUEUE_TASKS, $queue);
             }
+
+            // Ensure delay between tasks, sleep may not sleep
+            if (microtime(true) - $waitingAt < $waitingTo) {
+                usleep(100000);
+                continue;
+            }
+
+            $waitingAt = microtime(true);
+            $waitingTo = call_user_func($this->waitingInterval);
 
             $task = $queue->dequeue();
 
@@ -96,8 +113,6 @@ final class Runner implements RunnerInterface
             } else {
                 $server->trigger(ServerInterface::EVENT_WAITING_TASKS);
             }
-
-            usleep(call_user_func($this->waitingInterval));
         }
 
         $server->trigger(ServerInterface::EVENT_STOPPING);
