@@ -76,7 +76,9 @@ final class Server implements ServerInterface
      */
     public function run(): void
     {
+        $this->daemon->createPIDFile(getmypid());
         $this->runner->run($this, new Queue());
+        $this->daemon->removePIDFile();
     }
 
     /**
@@ -105,7 +107,7 @@ final class Server implements ServerInterface
      */
     public function setTaskExecuted(TaskInterface $task): void
     {
-        $task->setExecutedAt(\DateTime::createFromFormat('U.u', microtime(true)));
+        $task->setExecutedAt(\DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', '')));
         $task->setStatus(TaskInterface::STATUS_IN_EXECUTOR);
 
         $this->trigger(static::EVENT_SET_TASK_EXECUTED, $task);
@@ -134,7 +136,7 @@ final class Server implements ServerInterface
      */
     public function setTaskFinished(TaskInterface $task, int $status, \Exception $error = null): void
     {
-        $task->setFinishedAt(\DateTime::createFromFormat('U.u', microtime(true)));
+        $task->setFinishedAt(\DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', '')));
         $task->setStatus($status);
         $task->setError($error);
 

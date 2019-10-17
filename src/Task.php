@@ -76,6 +76,10 @@ class Task implements TaskInterface
      */
     public function getStatus(): int
     {
+        if ($this->status === null) {
+            $this->status = self::STATUS_PENDING;
+        }
+
         return $this->status;
     }
 

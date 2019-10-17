@@ -13,15 +13,15 @@ class QueueTest extends TestCase
     {
         $queue = new Queue();
 
-        static::assertSame($queue::MODE_ERROR, $queue->getDuplicateHandlingMode());
-
-        $queue->setDuplicateHandlingMode($queue::MODE_IGNORE);
-
         static::assertSame($queue::MODE_IGNORE, $queue->getDuplicateHandlingMode());
 
         $queue->setDuplicateHandlingMode($queue::MODE_ERROR);
 
         static::assertSame($queue::MODE_ERROR, $queue->getDuplicateHandlingMode());
+
+        $queue->setDuplicateHandlingMode($queue::MODE_IGNORE);
+
+        static::assertSame($queue::MODE_IGNORE, $queue->getDuplicateHandlingMode());
     }
 
     public function testContents(): void

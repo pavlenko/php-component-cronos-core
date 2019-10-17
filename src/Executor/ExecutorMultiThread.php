@@ -52,6 +52,13 @@ final class ExecutorMultiThread implements ExecutorInterface
      */
     public function start(): void
     {
+        // Ensure handlers attached to signals
+        $this->master->getSignals();
+
+        // Ensure valid process title
+        $this->master->setProcessTitle(sprintf($this->title, 'master'), true);
+
+        // Init iterations countdown
         $this->curIterations = $this->maxIterations;
     }
 
@@ -91,7 +98,6 @@ final class ExecutorMultiThread implements ExecutorInterface
         $worker->setProcessTitle(sprintf($this->title, 'worker'));
 
         $this->master->fork($worker);
-        $this->master->setProcessTitle(sprintf($this->title, 'master'));
     }
 
     /**

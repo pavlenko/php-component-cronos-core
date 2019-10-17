@@ -96,9 +96,9 @@ final class Runner implements RunnerInterface
                 if ($this->executor->canExecute($task)) {
                     $server->setTaskExecuted($task);
 
-                    $this->executor->runExecute(function () use ($server, $task) {
+                    $this->executor->runExecute(function (...$args) use ($server, $task) {
                         try {
-                            $status = $this->handler->execute($server, $task);
+                            $status = $this->handler->execute($server, $task, ...$args);
                             $error  = null;
                         } catch (\Exception $exception) {
                             $status = TaskInterface::STATUS_ERROR;

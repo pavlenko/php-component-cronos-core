@@ -17,7 +17,7 @@ final class Queue implements QueueInterface
     /**
      * @param int $mode
      */
-    public function __construct(int $mode = self::MODE_ERROR)
+    public function __construct(int $mode = self::MODE_IGNORE)
     {
         $this->mode = $mode;
     }
