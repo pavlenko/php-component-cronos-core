@@ -14,6 +14,7 @@
     ],
     "require": {
         "php": ">=7.1",
+        "pe/component-cronos-dispatcher": "^1.0",
         "pe/component-cronos-process": "~1.0"
     },
     "require-dev": {

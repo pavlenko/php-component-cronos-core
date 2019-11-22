@@ -2,12 +2,13 @@
 
 namespace PE\Component\Cronos\Core;
 
+use PE\Component\Cronos\Dispatcher\EventDispatcherTrait;
 use PE\Component\Cronos\Process\Daemon;
 use PE\Component\Cronos\Process\Process;
 
 final class Server implements ServerInterface
 {
-    use EventEmitterTrait;
+    use EventDispatcherTrait;
 
     /**
      * @var RunnerInterface

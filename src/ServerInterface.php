@@ -2,7 +2,9 @@
 
 namespace PE\Component\Cronos\Core;
 
-interface ServerInterface extends EventEmitterInterface
+use PE\Component\Cronos\Dispatcher\EventDispatcherInterface;
+
+interface ServerInterface extends EventDispatcherInterface
 {
     public const STATUS_INACTIVE = 0;
     public const STATUS_ACTIVE   = 1;
